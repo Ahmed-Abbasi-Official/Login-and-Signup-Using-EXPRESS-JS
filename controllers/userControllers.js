@@ -1,5 +1,5 @@
 import {userModel} from '../models/user.model.js'
-
+import bcrypt from 'bcryptjs'
 
 class UserController{
     static home=(req,res)=>{
@@ -10,13 +10,14 @@ class UserController{
     }
 
     static createUser=async(req,res)=>{
+        const hashPassword=await bcrypt.hash(req.body.password,10)
         try {
             // Creating new Document Using User Model .
             const doc =await userModel.create(
                 {
                     name:req.body.username,
                     email:req.body.email,
-                    password:req.body.password,
+                    password:hashPassword,
                 }
             )
             // Saving Document .
@@ -43,11 +44,12 @@ class UserController{
             const result = await userModel.findOne({
                 email:uemail,
                 // password:upassword
-
+                
             })
             if (result) {
+                const encrypted=await bcrypt.compare(upassword,result.password)
 
-               if (result.password === upassword) {
+               if (encrypted=== upassword) {
                 res.render('index',{name:uname})
                 console.log("Result of finding email :::  ",result);
                }
